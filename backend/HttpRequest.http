@@ -1,0 +1,53 @@
+POST http://localhost:8080/api/v1/auth/register
+Content-Type: application/json
+
+{
+  "email": "bor3i@gmail.com",
+  "password": "5555",
+  "username": "Bor3i",
+  "role": "USER"
+}
+
+
+###
+POST http://localhost:8080/api/v1/auth/authenticate
+Content-Type: application/json
+
+{
+  "email": "bor3i@gmail.com",
+  "password": "5555"
+
+}
+
+###
+POST http://localhost:8080/timeCapsuleMessage/save
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdXRob3JpdGllcyI6WyJST0xFX1VTRVIiXSwic3ViIjoiQm9yM2kiLCJpYXQiOjE3NTU4Nzg0MDksImV4cCI6MTc1NTkyMTYwOX0.KX4cIgU-z4KzcPiulvn8Or8_pNgPxU5Ae-1ZSA650dg
+Content-Type: multipart/form-data; boundary=WebAppBoundary
+
+--WebAppBoundary
+Content-Disposition: form-data; name="message"
+Content-Type: application/json
+
+{
+  "subject": "Test Email",
+  "content": "Here's a draft email that you can use as a starting point:\nSubject: Why Spring is the Top Choice...",
+  "scheduledDate": "2025-08-22T17:05:00",
+  "recipientEmail": "borichouket@gmail.com"
+}
+
+--WebAppBoundary
+Content-Disposition: form-data; name="file"; filename="TP3.pdf"
+Content-Type: application/pdf
+
+<binary file content here>
+ ------BOUNDARY------
+
+
+###
+POST http://localhost:8080/ai/email
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdXRob3JpdGllcyI6WyJST0xFX1VTRVIiXSwic3ViIjoieWFzc2luZSIsImlhdCI6MTc1NTcwMzUwNSwiZXhwIjoxNzU1NzQ2NzA1fQ.1eBGA19DTPmWy1w9mH9EBaHxokCie8HkwGw0hPgE9os
+Content-Type: application/json
+
+{
+  "input": "i want a email that say that spring is the most importent framwork for backend."
+}

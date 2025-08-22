@@ -1,0 +1,410 @@
+1️⃣ Job
+A Job is the actual task you want to perform — like sending an email, generating a report, cleaning up files, etc.
+
+It’s represented by a class implementing Quartz’s Job interface.
+
+Quartz executes the job’s code when triggered.
+
+Think of it as “What do I want to do?”
+
+2️⃣ Trigger
+A Trigger defines when and how often the job should run.
+
+It can be:
+
+A simple trigger — run once at a specific time or repeat every X seconds.
+
+A cron trigger — run according to a cron expression (e.g., every day at 9 AM).
+
+Think of it as “When do I want to do it?”
+
+How they work together
+You create a JobDetail object (defines the job to run).
+
+You create a Trigger object (defines the schedule).
+
+You tell Quartz to schedule the job with that trigger.
+
+When the trigger fires, Quartz runs the job’s execute() method.
+
+In your context (sending scheduled emails)
+Job: the class that sends the email (SendEmailJob).
+
+Trigger: the schedule you create based on user’s chosen date/time.
+
+Quartz uses this separation so you can reuse a job with many different schedules, or define very complex schedules without changing the job code.
+
+
+
+
+
+
+----------------------------------------------------------
+
+1️⃣ buildJobDetail(...)
+📌 But : Préparer le travail (Job) que Quartz doit exécuter à une date précise.
+Un Job dans Quartz = une tâche à exécuter (ici, envoyer un email).
+
+Ce que fait le code :
+JobDataMap : une sorte de petit “sac de données” qui contient toutes les informations nécessaires pour que la tâche fonctionne.
+Ici on y met :
+
+jobDataMap.put("email", scheduleEmailRequest.getEmail());
+jobDataMap.put("subject", scheduleEmailRequest.getSubject());
+jobDataMap.put("body", scheduleEmailRequest.getBody());
+→ Ce sont les infos de l’email à envoyer.
+
+JobBuilder.newJob(EmailJob.class) : dit à Quartz que ce travail est défini dans la classe EmailJob (c’est elle qui contient le code pour envoyer l’email).
+
+.withIdentity(UUID.randomUUID().toString(), "email-jobs") : donne un identifiant unique au job (pour le retrouver plus tard).
+
+.storeDurably() : permet de garder le job même si aucun trigger n’est encore associé (utile si tu veux planifier plus tard).
+
+✅ En résumé :
+buildJobDetail = prépare la fiche d’identité du travail à faire + les données dont il aura besoin.
+
+2️⃣ buildJobTrigger(...)
+📌 But : Dire quand Quartz doit exécuter ce travail.
+Un Trigger dans Quartz = l’alarme qui déclenche le job.
+
+Ce que fait le code :
+.forJob(jobDetail) : lie ce trigger au job que tu viens de créer.
+
+.withIdentity(jobDetail.getKey().getName(), "email-triggers") : donne un identifiant unique à ce trigger.
+
+.startAt(Date.from(startAt.toInstant())) : dit à Quartz à quelle date et heure démarrer ce job.
+
+.withSchedule(SimpleScheduleBuilder.simpleSchedule().withMisfireHandlingInstructionFireNow()) :
+
+simpleSchedule() : planification simple (pas répétée plusieurs fois comme un cron).
+
+withMisfireHandlingInstructionFireNow() : si Quartz a raté l’heure prévue (ex : serveur éteint), il exécute le job immédiatement au redémarrage.
+
+✅ En résumé :
+buildJobTrigger = configure l’alarme qui déclenchera ton job à la bonne date et heure.
+
+🗂 Comment ça marche ensemble :
+buildJobDetail(...) → prépare quoi faire et avec quelles données.
+
+buildJobTrigger(...) → définit quand le faire.
+
+Quartz → met tout ça dans sa base et s’occupe de déclencher ton EmailJob à la bonne heure.
+
+
+
+
+
+Main roles of the Scheduler in your project
+Register jobs
+
+When you do:
+
+    scheduler.scheduleJob(jobDetail, trigger);
+    you are telling the scheduler:
+
+"Here’s a job definition and a trigger — please remember to run this job at the given time.
+
+
+----------------------------------------------------------
+
+
+
+The EmailJob is the actual task that Quartz runs at the scheduled time.
+
+Think of it this way:
+
+scheduleEmailJob(...) just tells Quartz:
+“Hey, on scheduledDate, run this job (EmailJob) with these parameters (email, subject, body).”
+
+EmailJob is the code that will be executed in the future when that time comes.
+
+How it works in your case
+Now
+In scheduleEmailJob(...) you build a JobDetail and a Trigger and register them with the scheduler.
+
+
+JobDetail jobDetail = JobBuilder.newJob(EmailJob.class)
+                                .usingJobData(jobDataMap) // pass email data
+                                .build();
+scheduler.scheduleJob(jobDetail, trigger);
+This says:
+
+“Quartz, please run the class EmailJob at this date/time, and give it these values (email, subject, body).”
+
+Later (at the scheduled time)
+Quartz will load your EmailJob class and call its executeInternal() method:
+
+
+@Override
+protected void executeInternal(JobExecutionContext context) throws JobExecutionException {
+    JobDataMap jobDataMap = context.getMergedJobDataMap();
+    String recipientEmail = jobDataMap.getString("email");
+    String subject = jobDataMap.getString("subject");
+    String body = jobDataMap.getString("body");
+
+    sendMail(mailProperties.getUsername(), recipientEmail, subject, body);
+}
+Here:
+
+It reads the data you stored in the JobDataMap earlier.
+
+Then it uses JavaMailSender to actually send the email.
+
+In short
+scheduleEmailJob(...) = Schedules the work. (“When and what to run.”)
+
+EmailJob = Performs the work. (“How to send the email.”)
+
+If you want, I can draw you a timeline diagram showing how save() → scheduleEmailJob() → EmailJob execution flows over time. That makes it super easy to visualize.
+
+
+
+
+
+
+🔍 How executeInternal() Gets Called
+Here’s the chain of events:
+
+You save the message and schedule the job
+
+
+scheduler.scheduleJob(jobDetail, trigger);
+This line is key.
+It tells Quartz:
+
+"Here’s the job class (EmailJob) I want you to run."
+
+"Here’s the trigger that decides when to run it."
+
+Quartz waits for the trigger time
+The Quartz scheduler runs in the background. It monitors all triggers and checks if any are ready to fire.
+
+When the trigger fires
+Quartz creates an instance of your job class (EmailJob), injects the JobExecutionContext and JobDataMap, then calls:
+
+
+executeInternal(JobExecutionContext context)
+for you.
+
+Your EmailJob executes
+Inside executeInternal(), your logic runs:
+
+Extract data from JobDataMap (email, subject, body)
+
+Send the email
+
+🧠 Important point
+executeInternal() is a Quartz lifecycle method from QuartzJobBean.
+
+You override it so you can put your custom logic there.
+
+You never call it directly — it’s like main() for your scheduled job, but Quartz invokes it when the scheduled time arrives.
+
+🗺 Flow in your specific code
+
+save() → scheduleEmailJob() → scheduler.scheduleJob(jobDetail, trigger)
+               ↓
+         Quartz waits until trigger time
+               ↓
+      Quartz instantiates EmailJob
+               ↓
+Quartz calls executeInternal() in EmailJob
+               ↓
+EmailJob sends email
+If you want, I can draw you a timeline diagram showing exactly how Quartz moves from scheduler.scheduleJob() to running executeInternal() without you ever calling it.
+Do you want me to make that?
+
+
+
+
+--------------------------------------------
+
+That Trigger code is basically Quartz’s way of saying:
+💬 “Run this email job at a specific time, and if we miss the time, run it immediately.”
+
+Let’s break it line-by-line:
+
+1️⃣ Create a new trigger builder
+Trigger trigger = TriggerBuilder.newTrigger()
+
+
+Starts building a Quartz Trigger, which controls when a job runs.
+
+2️⃣ Link the trigger to the job
+.forJob(jobDetail)
+
+
+Associates the trigger with the jobDetail you built earlier.
+
+Without this, Quartz wouldn’t know which job to run when the trigger fires.
+
+3️⃣ Give the trigger a unique identity
+.withIdentity(jobDetail.getKey().getName(), "email-triggers")
+
+
+Every trigger in Quartz has a name and a group.
+
+Here:
+
+Name = same as the job’s name (UUID you generated)
+
+Group = "email-triggers"
+
+This helps Quartz track it and lets you cancel/reschedule later if needed.
+
+4️⃣ Add a description
+.withDescription("Send Email Trigger")
+
+
+Human-readable text, purely for logging/debugging.
+
+5️⃣ Set the start time
+.startAt(Date.from(dateTime.toInstant()))
+
+
+dateTime is your ZonedDateTime for when the email should be sent.
+
+.toInstant() converts it to a java.time.Instant.
+
+Date.from(...) converts that to the old java.util.Date that Quartz uses internally.
+
+6️⃣ Define what happens if a misfire occurs
+.withSchedule(SimpleScheduleBuilder.simpleSchedule()
+        .withMisfireHandlingInstructionFireNow())
+
+
+simpleSchedule() → A basic, one-time schedule (not recurring).
+
+Misfire = The scheduled time was missed (server down, Quartz paused, etc.).
+
+withMisfireHandlingInstructionFireNow() = If a misfire happens, run the job immediately when Quartz resumes instead of skipping it.
+
+7️⃣ Finalize the trigger
+.build();
+
+
+Creates the Trigger object from all the settings above.
+
+✅ In plain words:
+This trigger says:
+
+“At exactly dateTime, run the jobDetail (my email job). If for any reason that moment passes without running, just run it immediately when you can.”
+
+
+
+
+
+
+
+
+-------------------------------------------------
+ChatGPT a dit :
+
+They can both result in dependencies being injected by Spring, but they do it in different ways — and in modern Spring, we normally pick one approach, not both.
+
+Let’s go step-by-step.
+
+1️⃣ @Autowired (Field Injection)
+
+You put it directly on a field.
+
+Spring creates the object, then sets that field afterward.
+
+Example:
+
+@Service
+public class MyService {
+
+    @Autowired
+    private MyRepository repo; // injected after object creation
+
+}
+
+
+Pros
+
+Very short to write.
+
+Cons
+
+Field is mutable (can be changed later).
+
+Makes unit testing harder (you need reflection or Spring to set it).
+
+Dependencies are “hidden” — you don’t see them in the constructor.
+
+2️⃣ @AllArgsConstructor (Constructor Injection)
+
+@AllArgsConstructor from Lombok generates a constructor with parameters for all fields.
+
+If the class has only one constructor, Spring will automatically use it for dependency injection without needing @Autowired.
+
+Example:
+
+@Service
+@AllArgsConstructor
+public class MyService {
+
+    private final MyRepository repo; // injected via constructor
+
+}
+
+
+Generated constructor:
+
+public MyService(MyRepository repo) {
+    this.repo = repo;
+}
+
+
+Pros
+
+Dependencies are explicit in the constructor.
+
+Fields can be final → immutability.
+
+Easier to unit test (you can create the object yourself in tests).
+
+Cons
+
+Slightly more code (but Lombok solves that).
+
+3️⃣ Do they do the same job?
+
+Yes → Both ways get dependencies injected by Spring.
+
+No → They do it at different times:
+
+Field injection (@Autowired on field) → after object creation.
+
+Constructor injection (@AllArgsConstructor) → at object creation.
+
+4️⃣ When to use which
+
+Recommended (modern Spring) → Constructor injection (@AllArgsConstructor + final fields, no @Autowired).
+
+Only use @Autowired on fields if:
+
+You’re in a very small demo/test project.
+
+You want the shortest code possible and don’t care about immutability/testability.
+
+5️⃣ Why not mix them
+
+If you write:
+
+@AllArgsConstructor
+public class MyService {
+
+    @Autowired
+    private MyRepository repo;
+}
+
+
+That’s inconsistent:
+
+Lombok generates a constructor for repo, but you also tell Spring to inject it via the field.
+
+You’re mixing two different injection styles in one class → confusing.
+
+If you want, I can make you a side-by-side diagram showing exactly how Spring injects in each case and why constructor injection is usually better. That would make the difference very visual.
