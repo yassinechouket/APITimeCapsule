@@ -1,0 +1,443 @@
+<div class="email-container">
+  <div class="main-card">
+    <div class="card-header">
+      <div class="header-content">
+        <div class="header-icon">
+          <i class="fas fa-envelope-open-text"></i>
+        </div>
+        <div class="header-text">
+          <h1>Time Capsule Email Manager</h1>
+          <p>Create and schedule AI-powered future emails with intelligent assistance</p>
+        </div>
+      </div>
+      <div class="progress-indicator">
+        <div class="progress-bar" [style.width.%]="getFormProgress()"></div>
+      </div>
+    </div>
+
+    <div class="card-body">
+      <div class="form-grid">
+        <!-- Left Column - AI Assistant & Message Creation -->
+        <div class="form-column">
+          <!-- AI Assistant Card -->
+          <div class="info-card ai-card" [class.completed]="aiResponse">
+            <div class="card-header-small">
+              <div class="card-icon">
+                <i class="fas fa-robot"></i>
+              </div>
+              <h3>AI Email Assistant</h3>
+              <div class="completion-badge" *ngIf="aiResponse">
+                <i class="fas fa-check"></i>
+              </div>
+            </div>
+            
+            <div class="card-content">
+              <!-- AI Response Display -->
+              <div class="ai-response-section" *ngIf="aiResponse">
+                <label>
+                  <i class="fas fa-magic"></i>
+                  AI Generated Content
+                </label>
+                <div class="ai-response-box">
+                  <div class="ai-response-content">{{ aiResponse }}</div>
+                  <div class="ai-response-actions">
+                    <button type="button" class="btn btn-small btn-primary" (click)="useAIResponse()">
+                      <i class="fas fa-arrow-down"></i>
+                      Use This Content
+                    </button>
+                    <button type="button" class="btn btn-small btn-secondary" (click)="clearAIResponse()">
+                      <i class="fas fa-times"></i>
+                      Clear
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- AI Prompt Input -->
+              <div class="form-field">
+                <label for="aiPrompt">
+                  <i class="fas fa-lightbulb"></i>
+                  Describe your email idea *
+                </label>
+                <div class="input-wrapper">
+                  <textarea
+                    id="aiPrompt"
+                    rows="3"
+                    [(ngModel)]="aiPrompt"
+                    placeholder="E.g., 'Write a birthday message for my friend', 'Create a professional follow-up email', 'Draft a thank you note'..."
+                    class="ai-prompt-input"></textarea>
+                  <div class="input-border"></div>
+                </div>
+                <button 
+                  type="button" 
+                  class="btn btn-ai" 
+                  (click)="generateAIResponse()" 
+                  [disabled]="isGeneratingAI || !aiPrompt.trim()">
+                  <i class="fas fa-magic" *ngIf="!isGeneratingAI"></i>
+                  <i class="fas fa-spinner fa-spin" *ngIf="isGeneratingAI"></i>
+                  {{ isGeneratingAI ? 'Generating...' : 'Generate with AI' }}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Message Creation Form -->
+          <div class="info-card" [class.completed]="messageForm.valid">
+            <div class="card-header-small">
+              <div class="card-icon">
+                <i class="fas fa-envelope"></i>
+              </div>
+              <h3>Email Details</h3>
+              <div class="completion-badge" *ngIf="messageForm.valid">
+                <i class="fas fa-check"></i>
+              </div>
+            </div>
+            
+            <div class="card-content">
+              <form [formGroup]="messageForm" (ngSubmit)="onSubmit()">
+                <!-- Subject -->
+                <div class="form-field" [class.focused]="isFieldFocused('subject')" [class.error]="isFieldInvalid('subject')">
+                  <label for="subject">
+                    <i class="fas fa-heading"></i>
+                    Subject *
+                  </label>
+                  <div class="input-wrapper">
+                    <input
+                      id="subject"
+                      type="text"
+                      formControlName="subject"
+                      placeholder="Enter a compelling email subject"
+                      (focus)="setFieldFocus('subject', true)"
+                      (blur)="setFieldFocus('subject', false)"
+                      [class.error]="isFieldInvalid('subject')">
+                    <div class="input-border"></div>
+                  </div>
+                  <div class="error-message" *ngIf="isFieldInvalid('subject')">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    {{ getFieldError('subject') }}
+                  </div>
+                </div>
+
+                <!-- Content -->
+                <div class="form-field" [class.focused]="isFieldFocused('content')" [class.error]="isFieldInvalid('content')">
+                  <label for="content">
+                    <i class="fas fa-align-left"></i>
+                    Message Content *
+                  </label>
+                  <div class="input-wrapper">
+                    <textarea
+                      id="content"
+                      rows="6"
+                      formControlName="content"
+                      placeholder="Write your message content or use AI to generate it..."
+                      (focus)="setFieldFocus('content', true)"
+                      (blur)="setFieldFocus('content', false)"
+                      [class.error]="isFieldInvalid('content')"></textarea>
+                    <div class="input-border"></div>
+                  </div>
+                  <div class="character-count">
+                    {{ messageForm.get('content')?.value?.length || 0 }} characters
+                  </div>
+                  <div class="error-message" *ngIf="isFieldInvalid('content')">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    {{ getFieldError('content') }}
+                  </div>
+                </div>
+
+                <!-- Recipient Email -->
+                <div class="form-field" [class.focused]="isFieldFocused('recipientEmail')" [class.error]="isFieldInvalid('recipientEmail')">
+                  <label for="recipientEmail">
+                    <i class="fas fa-at"></i>
+                    Recipient Email *
+                  </label>
+                  <div class="input-wrapper">
+                    <input
+                      id="recipientEmail"
+                      type="email"
+                      formControlName="recipientEmail"
+                      placeholder="recipient@example.com"
+                      (focus)="setFieldFocus('recipientEmail', true)"
+                      (blur)="setFieldFocus('recipientEmail', false)"
+                      [class.error]="isFieldInvalid('recipientEmail')">
+                    <div class="input-border"></div>
+                  </div>
+                  <div class="error-message" *ngIf="isFieldInvalid('recipientEmail')">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    {{ getFieldError('recipientEmail') }}
+                  </div>
+                </div>
+
+                <!-- Scheduled Date -->
+                <div class="form-field" [class.focused]="isFieldFocused('scheduledDate')" [class.error]="isFieldInvalid('scheduledDate')">
+                  <label for="scheduledDate">
+                    <i class="fas fa-calendar-alt"></i>
+                    Scheduled Date & Time *
+                  </label>
+                  <div class="input-wrapper">
+                    <input
+                      id="scheduledDate"
+                      type="datetime-local"
+                      formControlName="scheduledDate"
+                      (focus)="setFieldFocus('scheduledDate', true)"
+                      (blur)="setFieldFocus('scheduledDate', false)"
+                      [class.error]="isFieldInvalid('scheduledDate')">
+                    <div class="input-border"></div>
+                  </div>
+                  <div class="help-text">
+                    <i class="fas fa-info-circle"></i>
+                    Select when you want this email to be sent in the future
+                  </div>
+                  <div class="error-message" *ngIf="isFieldInvalid('scheduledDate')">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    {{ getFieldError('scheduledDate') }}
+                  </div>
+                </div>
+
+                <!-- File Attachment -->
+                <div class="form-field">
+                  <label for="fileAttachment">
+                    <i class="fas fa-paperclip"></i>
+                    Attachment (Optional)
+                  </label>
+                  <div class="file-upload-wrapper">
+                    <input
+                      id="fileAttachment"
+                      type="file"
+                      (change)="onFileSelected($event)"
+                      accept="image/*,.pdf,.doc,.docx,.txt,.zip"
+                      class="file-input"
+                      #fileInput>
+                    <div class="file-upload-area" (click)="fileInput.click()">
+                      <div class="file-upload-content" *ngIf="!selectedFile">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p>Click to select a file or drag and drop</p>
+                        <small>Supports images, PDFs, documents, and more (Max 10MB)</small>
+                      </div>
+                      <div class="file-selected" *ngIf="selectedFile">
+                        <i class="fas fa-file-alt"></i>
+                        <div class="file-info">
+                          <strong>{{ selectedFile.name }}</strong>
+                          <small>{{ (selectedFile.size / 1024 / 1024).toFixed(2) }} MB</small>
+                        </div>
+                        <button 
+                          type="button" 
+                          class="btn btn-small btn-danger file-remove-btn"
+                          (click)="clearSelectedFile(); $event.stopPropagation()">
+                          <i class="fas fa-times"></i>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <!-- Action Buttons Card -->
+          <div class="info-card">
+            <div class="card-content">
+              <div class="action-buttons">
+                <button
+                  type="button"
+                  class="btn btn-secondary"
+                  (click)="resetForm()"
+                  [disabled]="isSubmitting">
+                  <i class="fas fa-undo"></i>
+                  <span>Reset Form</span>
+                </button>
+                <button
+                  type="submit"
+                  class="btn btn-primary"
+                  (click)="onSubmit()"
+                  [disabled]="isSubmitting || messageForm.invalid">
+                  <i class="fas fa-paper-plane" *ngIf="!isSubmitting"></i>
+                  <i class="fas fa-spinner fa-spin" *ngIf="isSubmitting"></i>
+                  <span>{{ isSubmitting ? 'Creating Email...' : 'Schedule Email' }}</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column - Message Management -->
+        <div class="form-column">
+          <!-- Update Message Card -->
+          <div class="info-card update-card" *ngIf="isEditMode && selectedMessage">
+            <div class="card-header-small">
+              <div class="card-icon">
+                <i class="fas fa-edit"></i>
+              </div>
+              <h3>Update Email</h3>
+              <button type="button" class="btn btn-small btn-secondary" (click)="cancelEdit()">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+            
+            <div class="card-content">
+              <div class="selected-message-info">
+                <h4>{{ selectedMessage.subject }}</h4>
+                <p class="message-meta">
+                  <span class="status-badge" [class]="getStatusClass(selectedMessage.status)">
+                    {{ selectedMessage.status }}
+                  </span>
+                  <span class="date-info">
+                    <i class="fas fa-calendar"></i>
+                    {{ formatDate(selectedMessage.scheduledDate) }}
+                  </span>
+                  <span *ngIf="selectedMessage.attachmentPath" class="attachment-indicator">
+                    <i class="fas fa-paperclip"></i>
+                    Has attachment
+                  </span>
+                </p>
+              </div>
+
+              <form [formGroup]="updateForm">
+                <!-- Update Content -->
+                <div class="form-field">
+                  <label for="updateContent">
+                    <i class="fas fa-align-left"></i>
+                    Update Content
+                  </label>
+                  <div class="input-wrapper">
+                    <textarea
+                      id="updateContent"
+                      rows="4"
+                      formControlName="content"
+                      placeholder="Leave empty to keep current content"></textarea>
+                    <div class="input-border"></div>
+                  </div>
+                </div>
+
+                <!-- Update Recipient Email -->
+                <div class="form-field" [class.error]="isFieldInvalid('recipientEmail', updateForm)">
+                  <label for="updateRecipientEmail">
+                    <i class="fas fa-at"></i>
+                    Update Recipient Email
+                  </label>
+                  <div class="input-wrapper">
+                    <input
+                      id="updateRecipientEmail"
+                      type="email"
+                      formControlName="recipientEmail"
+                      placeholder="Leave empty to keep current email">
+                    <div class="input-border"></div>
+                  </div>
+                  <div class="error-message" *ngIf="isFieldInvalid('recipientEmail', updateForm)">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    {{ getFieldError('recipientEmail', updateForm) }}
+                  </div>
+                </div>
+
+                <!-- Update Scheduled Date -->
+                <div class="form-field">
+                  <label for="updateScheduledDate">
+                    <i class="fas fa-calendar-alt"></i>
+                    Update Scheduled Date
+                  </label>
+                  <div class="input-wrapper">
+                    <input
+                      id="updateScheduledDate"
+                      type="date"
+                      formControlName="scheduledDate">
+                    <div class="input-border"></div>
+                  </div>
+                </div>
+
+                <!-- Update Attachment Path -->
+                <div class="form-field">
+                  <label for="updateAttachmentPath">
+                    <i class="fas fa-paperclip"></i>
+                    Update Attachment Path
+                  </label>
+                  <div class="input-wrapper">
+                    <input
+                      id="updateAttachmentPath"
+                      type="text"
+                      formControlName="attachmentPath"
+                      placeholder="Leave empty to keep current attachment">
+                    <div class="input-border"></div>
+                  </div>
+                </div>
+
+                <div class="action-buttons">
+                  <button
+                    type="button"
+                    class="btn btn-danger"
+                    (click)="deleteMessage(selectedMessage.id)">
+                    <i class="fas fa-trash"></i>
+                    <span>Delete</span>
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-primary"
+                    (click)="updateMessage()"
+                    [disabled]="isUpdating">
+                    <i class="fas fa-save" *ngIf="!isUpdating"></i>
+                    <i class="fas fa-spinner fa-spin" *ngIf="isUpdating"></i>
+                    <span>{{ isUpdating ? 'Updating...' : 'Update Email' }}</span>
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <!-- Messages List Card -->
+          <div class="info-card">
+            <div class="card-header-small">
+              <div class="card-icon">
+                <i class="fas fa-list"></i>
+              </div>
+              <h3>Your Scheduled Emails ({{ messages.length }})</h3>
+              <button type="button" class="btn btn-small btn-secondary" (click)="loadMessages()">
+                <i class="fas fa-refresh"></i>
+              </button>
+            </div>
+            
+            <div class="card-content">
+              <div class="messages-list" *ngIf="messages.length > 0; else noMessages">
+                <div 
+                  *ngFor="let message of messages" 
+                  class="message-item"
+                  [class.selected]="selectedMessage?.id === message.id"
+                  (click)="selectMessage(message)">
+                  <div class="message-header">
+                    <h4>{{ message.subject }}</h4>
+                    <div class="message-badges">
+                      <span class="status-badge" [class]="getStatusClass(message.status)">
+                        {{ message.status }}
+                      </span>
+                      <span *ngIf="message.attachmentPath" class="attachment-badge">
+                        <i class="fas fa-paperclip"></i>
+                      </span>
+                    </div>
+                  </div>
+                  <div class="message-meta">
+                    <span class="recipient">
+                      <i class="fas fa-at"></i>
+                      {{ message.recipientEmail }}
+                    </span>
+                    <span class="date">
+                      <i class="fas fa-calendar"></i>
+                      {{ formatDate(message.scheduledDate) }}
+                    </span>
+                  </div>
+                  <div class="message-preview">
+                    {{ message.content.substring(0, 100) }}{{ message.content.length > 100 ? '...' : '' }}
+                  </div>
+                </div>
+              </div>
+              
+              <ng-template #noMessages>
+                <div class="empty-state">
+                  <i class="fas fa-envelope-open"></i>
+                  <h4>No scheduled emails yet</h4>
+                  <p>Create your first time capsule email using the form on the left.</p>
+                </div>
+              </ng-template>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
