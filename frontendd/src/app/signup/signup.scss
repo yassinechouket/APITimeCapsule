@@ -1,0 +1,391 @@
+/* register.component.scss */
+.register-container {
+  min-height: 100vh;
+  background: #f8fafc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
+.register-card {
+  background: white;
+  border-radius: 20px;
+  padding: 40px;
+  width: 100%;
+  max-width: 450px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  position: relative;
+}
+
+.register-header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.brand-icon {
+  width: 32px;
+  height: 32px;
+  background: #e53e3e;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+.brand-text {
+  font-size: 16px;
+  font-weight: 600;
+  color: #2d3748;
+}
+
+.register-title {
+  font-size: 28px;
+  font-weight: 600;
+  color: #2d3748;
+  margin: 0 0 8px 0;
+}
+
+.title-accent {
+  color: #e53e3e;
+}
+
+.register-subtitle {
+  color: #718096;
+  font-size: 14px;
+  margin: 0 0 24px 0;
+  font-weight: 400;
+}
+
+.google-register-btn {
+  width: 100%;
+  background: #f7fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 12px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #4a5568;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 24px;
+
+  &:hover {
+    background: #edf2f7;
+    border-color: #cbd5e0;
+  }
+
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+    border-color: #4299e1;
+  }
+}
+
+.google-icon {
+  flex-shrink: 0;
+}
+
+.divider {
+  position: relative;
+  text-align: center;
+  margin: 24px 0;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: #e2e8f0;
+  }
+}
+
+.divider-text {
+  background: white;
+  color: #a0aec0;
+  font-size: 14px;
+  padding: 0 16px;
+  position: relative;
+}
+
+.register-form {
+  margin-bottom: 24px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.name-row {
+  display: flex;
+  gap: 12px;
+  
+  .form-group {
+    margin-bottom: 20px;
+  }
+}
+
+.half-width {
+  flex: 1;
+}
+
+.form-input {
+  width: 100%;
+  padding: 14px 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  background-color: white;
+  box-sizing: border-box;
+  color: #2d3748;
+
+  &::placeholder {
+    color: #a0aec0;
+    font-size: 14px;
+  }
+
+  &:focus {
+    outline: none;
+    border-color: #4299e1;
+    box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+  }
+
+  &.error {
+    border-color: #f56565;
+    background-color: #fed7d7;
+  }
+
+  &.error:focus {
+    box-shadow: 0 0 0 3px rgba(245, 101, 101, 0.1);
+  }
+}
+
+.password-input-container {
+  position: relative;
+}
+
+.password-input {
+  padding-right: 48px;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #a0aec0;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: color 0.2s ease;
+
+  &:hover {
+    color: #718096;
+  }
+
+  &:focus {
+    outline: none;
+    color: #4299e1;
+  }
+}
+
+.error-message {
+  color: #f56565;
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.checkbox-container {
+  display: flex;
+  align-items: flex-start;
+  cursor: pointer;
+  font-size: 14px;
+  color: #4a5568;
+  user-select: none;
+  line-height: 1.4;
+
+  input[type="checkbox"] {
+    display: none;
+  }
+}
+
+.checkmark {
+  width: 16px;
+  height: 16px;
+  border: 2px solid #e2e8f0;
+  border-radius: 4px;
+  margin-right: 8px;
+  margin-top: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  background-color: white;
+  flex-shrink: 0;
+
+  input[type="checkbox"]:checked + & {
+    background-color: #4299e1;
+    border-color: #4299e1;
+
+    &::after {
+      content: '✓';
+      color: white;
+      font-size: 10px;
+      font-weight: bold;
+    }
+  }
+}
+
+.terms-link {
+  color: #e53e3e;
+  text-decoration: none;
+  transition: color 0.2s ease;
+
+  &:hover {
+    color: #c53030;
+    text-decoration: underline;
+  }
+
+  &:focus {
+    outline: none;
+    color: #c53030;
+  }
+}
+
+.signup-button {
+  width: 100%;
+    background: #e53e3e;
+    color: white;
+    border: none;
+    padding: 14px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  
+    &:hover:not(:disabled) {
+      background: #c53030;
+      transform: translateY(-1px);
+    }
+  
+    &:focus {
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.3);
+    }
+  
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+  
+      &:hover {
+        background: #e53e3e;
+        transform: none;
+      }
+    }
+  }
+
+.loading-spinner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.login-section {
+  text-align: center;
+  padding-top: 20px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.login-text {
+  color: #718096;
+  font-size: 14px;
+  margin-right: 4px;
+}
+
+.login-link {
+  background: none;
+  border: none;
+  color: #e53e3e;
+  font-size: 14px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: color 0.2s ease;
+
+  &:hover {
+    color: #c53030;
+    text-decoration: underline;
+  }
+
+  &:focus {
+    outline: none;
+    color: #c53030;
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 480px) {
+  .register-container {
+    padding: 16px;
+  }
+  
+  .register-card {
+    padding: 32px 24px;
+  }
+  
+  .register-title {
+    font-size: 24px;
+  }
+
+  .name-row {
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .half-width {
+    width: 100%;
+  }
+}
+
+/* Focus styles for accessibility */
+.signup-button:focus,
+.google-register-btn:focus,
+.terms-link:focus,
+.login-link:focus,
+.password-toggle:focus {
+  outline: 2px solid #4299e1;
+  outline-offset: 2px;
+}

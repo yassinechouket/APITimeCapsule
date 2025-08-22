@@ -1,0 +1,12 @@
+<!-- Only show sidenav when showSideNav is true -->
+<app-sidenav 
+  *ngIf="showSideNav"
+  (onToggleSideNav)="onToggleSideNav($event)">
+</app-sidenav>
+
+<!-- Adjust body component based on sidenav visibility -->
+<app-body   
+  [collapsed]="showSideNav ? isSideNavCollapsed : true"   
+  [screenWidth]="screenWidth"
+  [class.full-width]="!showSideNav">
+</app-body>
