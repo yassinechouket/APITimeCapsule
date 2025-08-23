@@ -16,9 +16,9 @@ A secure REST API that allows users to create time capsule messages (text or fil
 - **Secure Authentication**: JWT and OAuth2 implementation with Spring Security
 - **Message Management**: Full CRUD operations for time capsule messages
 - **Future Scheduling**: Set precise delivery dates for your messages
-- **Automatic Delivery**: Reliable background scheduler using Spring @Scheduled or Quartz
+- **Automatic Delivery**: Reliable background scheduler using Quartz
 - **Email Integration**: SMTP support (Gmail, SendGrid, or custom providers)
-- **File Attachments**: Support for file uploads with local or AWS S3 storage
+- **File Attachments**: Support for file uploads with local
 - **Audit Trail**: Complete logging and tracking of message delivery status
 
 ### AI Enhancement (Optional)
